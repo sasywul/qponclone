@@ -47,23 +47,28 @@ export default function QRCodeResult({ generatedCode, onBack, onRefresh }: QRCod
     setBarcodeDataURL(rotatedCanvas.toDataURL());
   }, [generatedCode.foodItem.code, generatedCode.foodItem.price]);
 
-  useEffect(() => {
+useEffect(() => {
     const updateTimer = () => {
       const now = new Date();
-      const diff = generatedCode.expiresAt.getTime() - now.getTime();
-      
+      const diff = new Date(generatedCode.expiresAt).getTime() - now.getTime();
+
       if (diff > 0) {
-        const minutes = Math.floor(diff / (1000 * 60));
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        
+        setTimeLeft(
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        );
       } else {
-        setTimeLeft('00:00');
+        setTimeLeft('00:00:00');
       }
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
+    const intervalId = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(intervalId);
   }, [generatedCode.expiresAt]);
 
   const handleCopyCode = async () => {
@@ -118,8 +123,12 @@ export default function QRCodeResult({ generatedCode, onBack, onRefresh }: QRCod
             <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-200">
               {generatedCode.foodItem.image ? (
                 <img
-                  src={generatedCode.foodItem.image || '/unnamed.png'}
+                  src={generatedCode.foodItem.image }
                   alt={generatedCode.foodItem.name}
+                  onError={(e) => { 
+                  // Jika gagal, ganti dengan gambar default cadangan
+                  (e.target as HTMLImageElement).src = '/unnamed.png'; 
+                  }}
                   className="w-full h-full object-cover"
                 />
               ) : (

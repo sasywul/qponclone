@@ -36,12 +36,13 @@ export const generateQRCode = async (foodItem: FoodItem, outletInfo: OutletInfo)
 
   // Set expiration time (10 minutes from now)
   const expiresAt = new Date();
-  expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+  expiresAt.setHours(expiresAt.getHours() + 48)
 
   return {
     id,
     foodItem: {
       ...foodItem,
+            image: foodItem.image || '/unnamed.png', 
       description: 'Tersedia selama jam buka'
     },
     outletInfo: defaultOutletInfo,
